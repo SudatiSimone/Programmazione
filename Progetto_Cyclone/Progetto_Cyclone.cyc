@@ -1,0 +1,382 @@
+/*
+ ==========================================================================================
+ Name        : ProgettoCyclone.cyc
+ Author      : Simone Sudati
+ Description : Dati dei valori campionari ricevuti in input in un sistema,
+ 	 	 	   questo programma consentirà una prima stima della distribuzione della
+ 	 	 	   funzione. Permetterà quindi di capirne e analizzarne l'andamento.
+ ==========================================================================================
+ */
+
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+//Funzione che calcola lo stimatore campionario della deviazione standard
+//Input: data--> serie di dati inseriti in input
+//Output: la deviazione standard campionaria della serie di dati
+float calculateSD(float*@fat data);	 
+
+//Funzione che calcola lo stimatore campionario della media 
+//Input: data--> serie di dati inseriti in input
+//Output: la media campionaria della serie di dati, stima del valore atteso	
+float calculateMean(float*@fat data);
+
+//Funzione che il range campionario
+//Input: data--> serie di dati inseriti in input
+//Output: il range(o dispersione) della serie di dati	    	   
+float calculateRange(float*@fat data);
+
+//Funzione che il valore min campionario
+//Input: data--> serie di dati inseriti in input
+//Output: il minimo della serie di dati		
+float calculateMin(float*@fat data);
+
+//Funzione che il valore max campionario
+//Input: data--> serie di dati inseriti in input
+//Output: il massimo della serie di dati
+float calculateMax(float*@fat data);
+
+//Funzione che cambia il case della stringa
+//Input: name--> una stringa
+//Output: la stessa stringa in cui le lettere minuscole diventano maiuscole e viceversa
+void calculateChangeCase(char*@zeroterm name);
+
+//Funzione che analizza se la distribuzione inserita è una di quelle note
+//Input: name--> una stringa (NB: capisce indipendentemente dalla case notation!)
+// Esempio. Riconosce "NORMALE", "Normale", "normale", "NoRMale" ecc.
+//Output: un valore intero che corrisponde ad una distribuzione : 
+//0--> sconosciuta, 1--> Normale, 2--> Poisson, 3-->Exponent, 4-->Erlang, 5--> Logistic		
+int calculateDistribution (char*@zeroterm name);
+
+int main() {
+
+	printf("BENVENUTO NELLA STIMA DI FUNZIONI DI SIMONE \n\n");
+	printf("Stima della deviazione standard. \n");
+
+	int n1;
+	float *@fat data1;
+	printf("Enter the numbers of elements: ");
+	scanf("%d", &n1);
+	while (n1 > 100 || n1 < 2) {
+	    printf("Error! number should in range of (2 to 100).\n");
+	    printf("Enter the number again: ");
+	    scanf("%d", &n1);
+	}
+	data1 = malloc(n1*sizeof(float));
+	for (int i = 0; i < numelts(data1); ++i){
+		printf("%d. Enter number: ", i + 1);
+		scanf("%f", data1+i);
+	}
+    printf("\nStandard Deviation= %.6f", calculateSD(data1));
+    
+
+
+    printf("\n\nStima del valore atteso. \n");
+
+    int n2, i2;
+    float ? data2;
+ 	printf("Enter the numbers of elements: ");
+	scanf("%d", &n2);
+	while (n2 > 100 || n2 < 1) {
+	    printf("Error! number should in range of (1 to 100).\n");
+	    printf("Enter the number again: ");
+	    scanf("%d", &n2);
+	}
+	data2 = malloc(n2*sizeof(float));
+	for (i2 = 0; i2 < numelts(data2); ++i2) {
+	    printf("%d. Enter number: ", i2 + 1);
+	    scanf("%f", data2+i2);
+	}
+	printf("\nMedia= %.3f",calculateMean(data2));
+	
+	
+
+    printf("\n\nStima del range. ");
+	
+	int n3;
+    float *@fat data3;
+    printf("\nEnter the numbers of elements: ");
+    scanf("%d", &n3);
+    data3 = malloc(n3*sizeof(float));
+	for (int i3 = 0; i3 < numelts(data3); ++i3) {
+        printf("%d. Enter Number : ", i3 + 1);
+        scanf("%f",data3+i3);
+    }
+    printf("\nRange= %.3f",calculateRange(data3));
+	
+	
+	
+	printf("\n\nChe andamento di funzione pensi che segua?");
+	printf("\n Normale, Poisson, Exponent, Erlang, Logistic o un'altra. Enter: ");
+	
+	char s[1000]@zeroterm;
+	int caso=0; // 0--> Sconosciuta, 1--> Normale, 2--> Poisson, 3--> Exponent,  4-->Erlang, 5--> Logistic
+	scanf("%999s", s);
+	// si occupa scanf() di mettere il carattere di fine stringa.
+    // Può acquisire al massimo 1000 caratteri
+	
+
+	caso=calculateDistribution(s);
+	
+	calculateChangeCase(s);
+	printf("\nNome funzione modificato: %s",s);
+	
+	//Siccome in alcune operazioni la deviazione standard e la media campionaria sono al denominatore
+	//controllo che non siano =0 e nel caso pongo =1
+
+	printf("\n\n----------------------------------------------------");
+	printf("\nRECAP");
+	printf("\nFunzione: %s --> changeCase", s); 
+	
+	switch (caso){
+		case 1: //Caso distribuzione Normale
+			
+			printf("\nDistribuzione: ( 1/sqrt(2piGreco*%.2f^2) )*exp ^-(x-%.2f)^2/(2*%.2f^2)", calculateSD(data1) , calculateMean(data2) ,calculateSD(data1));
+			break;
+
+		case 2: //Caso distribuzione Poisson
+
+			printf("\nDistribuzione: ( exp-^(%.2f)*%.2f^X ) / ( X! )", calculateSD(data1) ,calculateSD(data1));
+			break;
+		
+		case 3: //Caso distribuzione Exponent
+		
+			//Controllo che media campionaria sia diversa da zero
+			if (calculateMean(data2)!=0){
+				printf("\nDistribuzione: %.2f*exp^-%.2f*X",  1/calculateMean(data2),1/calculateMean(data2));
+			}else {
+				printf("\nDistribuzione: %.2f*exp^-%.2f*X",  1/(calculateMean(data2)+1),1/(calculateMean(data2)+1));
+			}
+			
+			break;
+			
+		case 4: //Caso distribuzione Erlang
+		
+			//Controllo che dev. Standard sia diversa da zero
+			if (calculateSD(data1)!=0){
+				printf("\nDistribuzione: ( %.2f*X^(k-1) )/ (k-1)!  con X>=0", 1/calculateSD(data1) );
+			}else {
+				printf("\nDistribuzione: ( %.2f*X^(k-1) )/ (k-1)!  con X>=0", 1/(calculateSD(data1)+1) );
+			}
+			break;
+			
+		case 5: //Caso distribuzione Logistic
+			
+			printf("\nDistribuzione: ( e^-(x-%.2f)/(s) ) / ( s*(1+ e^-(x-%.2f)/(s)))", calculateMean(data2),calculateMean(data2) );
+			break;	
+			
+		default: //Caso distribuzione sconosciuta
+			
+			printf("\nDistribuzione: sconosciuta");
+			break;
+	}	
+	
+	printf("\nStandard Deviation= %.3f", calculateSD(data1));
+	printf("\nMedia campionaria= %.3f",calculateMean(data2));
+	printf("\nMin campionario= %.3f",calculateMin(data3));
+	printf("\nMax campionario= %.3f",calculateMax(data3));
+	printf("\nRange= %.3f",calculateRange(data3));
+	
+	printf("\n----------------------------------------------------");
+	
+	free(data1);
+	free(data2);
+	free(data3);
+	
+    return 0;
+}
+
+
+float calculateSD(float*@fat data) {
+
+    float sum = 0.0, mean, SD = 0.0;
+    int i;
+    for (i = 0; i < numelts(data); ++i) {
+		
+        sum += data[i];
+    }
+    mean = sum / numelts(data);
+    for (i = 0; i < numelts(data); ++i)
+        SD += pow(data[i] - mean, 2);
+
+    return sqrt(SD /(numelts(data)-1)); 
+}
+
+
+float calculateMean(float*@fat data){
+
+	float sum = 0.0, avg;
+	for (int i = 0; i < numelts(data); ++i) {
+        sum += data[i];
+    }
+    avg = sum / numelts(data);				
+    return avg;
+}
+
+float calculateRange(float*@fat data){
+	
+	float max=*data;
+	float min=*data;
+	float range=0.0;
+	int i;
+    for (i=1; i< numelts(data); ++i) {
+    	
+		if (*data < min){
+			min=*data;
+		}else if (*data>max){
+			max=*data;
+		}
+		
+		*data = *(data + i);
+    }
+    range=max-min;
+    return range;
+}
+
+float calculateMax(float*@fat data){
+	
+	float max=*data;
+	int i;
+    for (i=1; i< numelts(data); ++i) {
+    	
+		if (*data>max){
+			max=*data;
+		}
+		
+		*data = *(data + i);
+    }
+    return max;
+}
+
+float calculateMin(float*@fat data){
+	
+	float min=*data;
+	int i;
+    for (i=1; i< numelts(data); ++i) {
+    	
+		if (*data<min){
+			min=*data;
+		}
+		
+		*data = *(data + i);
+    }
+    return min;
+}
+
+void calculateChangeCase(char*@zeroterm name){
+	int i=0;
+	char ch;
+	while (name[i] != '\0') {
+        ch = name[i];
+        if (ch >= 'A' && ch <= 'Z')
+            name[i] = name[i] + 32;
+        else if (ch >= 'a' && ch <= 'z')
+            name[i] = name[i] - 32;   
+        i++;    
+   }
+}
+
+int calculateDistribution (char*@zeroterm name){
+	
+	char Normale[]@zeroterm="normale\0";
+	char Poisson[]@zeroterm="poisson\0";
+	char Esponenziale[]@zeroterm="exponent\0"; 
+	char Erlang[]@zeroterm="erlang\0";
+	char Logistica[]@zeroterm="logistic\0";
+	
+	int distrNormale=0;
+	int distrPoisson=0;
+	int distrEsponenziale=0;
+	int distrErlang=0;
+	int distrLogistica=0;
+	int result=0; // Di default la distribuzione è sconosciuta
+	
+	
+	int i=0;
+	char ch_input;
+	char ch_minusc_Normale;       //nel caso fosse minuscolo di Normale
+	char ch_maiusc_Normale;       //nel caso fosse maiuscolo di Normale
+	char ch_minusc_Poisson;       //nel caso fosse minuscolo di Poisson
+	char ch_maiusc_Poisson;  	  //nel caso fosse maiuscolo di Poisson
+	char ch_minusc_Esponenziale;  //nel caso fosse minuscolo di Esponenziale
+	char ch_maiusc_Esponenziale;  //nel caso fosse maiuscolo di Esponenziale
+	char ch_minusc_Logistica;     //nel caso fosse minuscolo di Logistica
+	char ch_maiusc_Logistica;  	  //nel caso fosse maiuscolo di Logistica
+	char ch_minusc_Erlang;        //nel caso fosse minuscolo di Erlang
+	char ch_maiusc_Erlang;  	  //nel caso fosse maiuscolo di Erlang
+	
+	// se la dimensione del nome di distribuzione inserito è maggiore di tutti
+	// quelli nel sistema allora la distribuzione è sconosciuta
+	// la distribuzione con nome più lungo è "exponent"
+	// stesso ragionamento se avesse lunghezza minore di "erlang"
+	if ((numelts(name)-1)> 8 || (numelts(name)-1)< 6){
+		return 0;
+	}
+	
+	while (name[i] != '\0') {
+	
+        ch_input = name[i];
+		ch_minusc_Normale= Normale[i];
+		ch_maiusc_Normale= Normale[i]-32;
+		ch_minusc_Poisson= Poisson[i];
+		ch_maiusc_Poisson= Poisson[i]-32;
+		ch_minusc_Esponenziale= Esponenziale[i];
+		ch_maiusc_Esponenziale= Esponenziale[i]-32;
+		ch_minusc_Logistica= Logistica[i];
+		ch_maiusc_Logistica= Logistica[i]-32;
+		ch_minusc_Erlang= Erlang[i];
+		ch_maiusc_Erlang= Erlang[i]-32;
+        
+		//Controllo se corrisponde alla Distribuzione Normale
+		if (ch_input==ch_minusc_Normale || ch_input==ch_maiusc_Normale){
+			// corrisponde, quindi non fare nulla!
+		}else{
+			distrNormale=1;
+		}
+		
+		//Controllo se corrisponde alla Distribuzione Poisson
+		if (ch_input==ch_minusc_Poisson || ch_input==ch_maiusc_Poisson){
+			// corrisponde, quindi non fare nulla!
+		}else{
+			distrPoisson=1;
+		}
+		
+		//Controllo se corrisponde alla Distribuzione Logistica
+		if (ch_input==ch_minusc_Logistica || ch_input==ch_maiusc_Logistica){
+			// corrisponde, quindi non fare nulla!
+		}else{
+			distrLogistica=1;
+		}
+		
+		//Controllo se corrisponde alla Distribuzione Erlangiana
+		if (ch_input==ch_minusc_Erlang || ch_input==ch_maiusc_Erlang){
+			// corrisponde, quindi non fare nulla!
+		}else{
+			distrErlang=1;
+		}
+		
+		//Controllo se corrisponde alla Distribuzione Esponenziale
+		if (ch_input==ch_minusc_Esponenziale || ch_input==ch_maiusc_Esponenziale){
+			// corrisponde, quindi non fare nulla!
+		}else{
+			distrEsponenziale=1;
+		}
+		
+		i++;
+   }
+   
+   if (distrNormale==0) {
+		result=1; // 1 corrisponde alla distribuzione normale
+   }else if(distrPoisson==0) {
+		result=2; // 2 corrisponde alla distribuzione Poisson
+   }else if (distrEsponenziale==0){
+		result=3; // 3 corrisponde alla distribuzione Esponenziale
+   }else if (distrErlang==0){
+		result=4; // 4 corrisponde alla distribuzione Erlangiana
+   }else if (distrLogistica==0){
+		result=5; // 5 corrisponde alla distribuzione Logistica
+   }
+	
+    return result;
+}
